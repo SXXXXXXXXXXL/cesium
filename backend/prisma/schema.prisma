@@ -1,0 +1,52 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String        @id @default(uuid())
+  username  String        @unique
+  password  String
+  createdAt DateTime      @default(now())
+  progress  GameProgress?
+  samples   Sample[]
+}
+
+model GameProgress {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentModule       Int      @default(1)
+  currentPanel        Int      @default(1)
+  score               Int      @default(0)
+  xp                  Int      @default(0)
+  fishermanInterviewed Boolean  @default(false)
+  activityCalculated  Boolean  @default(false)
+  decaySolved         Boolean  @default(false)
+  timelineSolved      Boolean  @default(false)
+  laporanExported     Boolean  @default(false)
+  selectedCharacter   String   @default("Dokter Rad")
+  updatedAt           DateTime @updatedAt
+}
+
+model Sample {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           String   // "water", "sediment", "biota"
+  location       String   // e.g., "Blue Bay"
+  radiationLevel Float    // raw counts/sec (cps) or cpm
+  n              Float?   // gross counts (N)
+  n0             Float?   // background counts (N0)
+  epsilon        Float?   // detector efficiency
+  iy             Float?   // gamma transition intensity
+  m              Float?   // sample mass (kg) or volume (L)
+  t              Float?   // measurement time (s)
+  activity       Float?   // calculated activity (Bq/kg or Bq/L)
+  isCalculated   Boolean  @default(false)
+  collectedAt    DateTime @default(now())
+}
